@@ -1,0 +1,13 @@
+{
+    "name": "gaoyichuan/wsjj",
+    "description": "Crawler for Tsinghua University lectures",
+    "type": "project",
+    "authors": [
+        {
+            "name": "gaoyichuan",
+            "email": "gaoyichuan@eduno1.com"
+        }
+    ],
+    "require": {
+    }
+}
