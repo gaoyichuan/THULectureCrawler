@@ -29,10 +29,6 @@ foreach ($lectures as $lecture) {
         ->setDescription($lecture['speaker'])
         ->setUrl($lecture['link']);
 
-//    $datetime->add(new \DateInterval('PT2H'));
-
-//    $vEvent->setDtEnd($datetime);
-
     $vCalendar->addComponent($vEvent);
 }
 
