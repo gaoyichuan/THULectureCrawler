@@ -8,13 +8,13 @@
 
 require_once 'crawler.php';
 require_once 'info.php';
-require_once '../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $vCalendar = new \Eluceo\iCal\Component\Calendar('清华大学文化素质教育讲座');
 $timezone = new \DateTimeZone('Asia/Shanghai');
 $crawler = new Crawler("http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more", false);
 
-$lectures = file_exists('../data/lectures.json') ? json_decode(file_get_contents('../data/lectures.json'), true) : array();
+$lectures = file_exists(__DIR__ . '/../data/lectures.json') ? json_decode(file_get_contents(__DIR__ . '/../data/lectures.json'), true) : array();
 
 $links = array();
 
@@ -38,7 +38,7 @@ foreach ($links as $link) {
     }
 }
 
-$fp = fopen('../data/lectures.json', 'w');
+$fp = fopen(__DIR__ . '/../data/lectures.json', 'w');
 fwrite($fp, json_encode($lectures));
 fclose($fp);
 
@@ -60,6 +60,6 @@ foreach ($lectures as $lecture) {
     $vCalendar->addComponent($vEvent);
 }
 
-$cal = fopen('../data/cal.ics', 'w');
+$cal = fopen(__DIR__ . '/../data/cal.ics', 'w');
 fwrite($cal, $vCalendar->render());
 fclose($cal);

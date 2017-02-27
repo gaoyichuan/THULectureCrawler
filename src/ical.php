@@ -6,13 +6,13 @@
  * Time: 7:03 PM
  */
 
-require_once '../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $vCalendar = new \Eluceo\iCal\Component\Calendar('清华大学文化素质教育讲座');
 
 $timezone = new \DateTimeZone('Asia/Shanghai');
 
-$lectures = file_exists('../data/lectures.json') ? json_decode(file_get_contents('../data/lectures.json'), true) : array();
+$lectures = file_exists(__DIR__ . '/../data/lectures.json') ? json_decode(file_get_contents(__DIR__ . '/../data/lectures.json'), true) : array();
 
 foreach ($lectures as $lecture) {
     $vEvent = new \Eluceo\iCal\Component\Event();
