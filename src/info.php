@@ -68,7 +68,7 @@ function getLectureInfo($link){
 
     if(preg_match('/(演讲|讲座|演出)(标题|题目|主题|名称)[:：]\s{0,2}(\S{1,})\n{1,}/u', $body, $matches)) {
         @$info['title'] = trimStr($matches[3]);
-    } else if(preg_match('/\n\s*\n(.*)\n(演讲人|嘉\s*宾|主持人|时\s*间|地\s*点)/u', $body, $matches)) {
+    } else if(preg_match('/\s*(.*)\n\s*\n(演讲人|讲述人|嘉\s*宾|主持人)[:：]/u', $body, $matches)) {
         @$info['title'] = trimStr($matches[1]);
     } else {
         preg_match('/\n\s+(\S+)\n+(简介|讲座简介|讲座介绍)/u', $body, $matches);
@@ -79,7 +79,10 @@ function getLectureInfo($link){
     @$info['speaker'] = trimStr($matches[2]);
 
     preg_match('/(时\s*间|日\s*期)[:：](.+)\n+/u', $body, $matches);
-    @$info['datetime'] = trimStr($matches[2]);
+    @$info['datetime_str'] = trimStr($matches[2]);
+
+    preg_match('/(\d{4})年(\d{1,2})月(\d{1,2})日\s{0,4}[(（]?周?\S?[）)]?(\d{1,2})[:：](\d{1,2})/u', $body, $matches);
+    @$info['datetime'] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . ' ' . $matches[4] . ':' . $matches[5] . ':00';
 
     preg_match('/(地\s*点)[:：](.+)\n+/u', $body, $matches);
     @$info['location'] = trimStr($matches[2]);

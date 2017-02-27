@@ -11,19 +11,32 @@ require_once 'info.php';
 
 $crawler = new Crawler("http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more", false);
 
+$lectures = file_exists('../data/lectures.json') ? json_decode(file_get_contents('../data/lectures.json'), true) : array();
+
+var_dump($lectures);
+
 $links = array();
 
-for ($page = 0; $page < 1; $page++){
+for ($page = 0; $page < 2; $page++) {  // Crawl two pages is enough
     $url = "http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more?page=$page";
     $crawler->setUrl($url);
     $links = array_merge($links, $crawler->crawl());
 }
 
-$lectures = array();
-
 foreach ($links as $link) {
     if((preg_match('/[0-9]{1,2}周/u', $link['title']) != false) && (mb_strpos($link['title'], '预告') != false)) {
         $info = getLectureInfo($link);
-        $lectures[] = $info;
+        $seen = false;
+        foreach ($lectures as $lecture) {
+            if($lecture['link'] == $link['url']) {
+                $seen = true;
+                break;
+            }
+        }
+        if(!$seen) $lectures[] = $info;
     }
 }
+
+$fp = fopen('../data/lectures.json', 'w');
+fwrite($fp, json_encode($lectures));
+fclose($fp);
