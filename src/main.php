@@ -10,6 +10,16 @@ require_once 'crawler.php';
 require_once 'info.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
+function getDuration(\DateTime $datetime) {
+    if($datetime->format('N') > 5) {
+        return new \DateInterval('PT2H');
+    } else if(in_array($datetime->format('H:i'), array('13:30', '15:20', '17:05'))) {
+        return new \DateInterval('PT1H35M');
+    } else {
+        return new \DateInterval('PT2H');
+    }
+}
+
 $vCalendar = new \Eluceo\iCal\Component\Calendar('清华大学文化素质教育讲座');
 $timezone = new \DateTimeZone('Asia/Shanghai');
 $crawler = new Crawler("http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more", false);
@@ -51,7 +61,7 @@ foreach ($lectures as $lecture) {
         ->setUseTimezone(true)
         ->setSummary($lecture['title'])
         ->setDtStart($datetime)
-        ->setDuration(new \DateInterval('PT2H'))
+        ->setDuration(getDuration($datetime))
         ->setNoTime(false)
         ->setLocation($lecture['location'])
         ->setDescription($lecture['speaker'])
