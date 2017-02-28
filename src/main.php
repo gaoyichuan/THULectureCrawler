@@ -6,9 +6,14 @@
  * Time: 1:18 PM
  */
 
+require_once 'config.inc.php';
 require_once 'crawler.php';
 require_once 'info.php';
+require_once 'weixin.php';
 require_once __DIR__ . '/../vendor/autoload.php';
+
+global $_CONFIG;
+date_default_timezone_set('Asia/Shanghai');
 
 function getDuration(\DateTime $datetime) {
     if($datetime->format('N') > 5) {
@@ -20,7 +25,6 @@ function getDuration(\DateTime $datetime) {
     }
 }
 
-$vCalendar = new \Eluceo\iCal\Component\Calendar('清华大学文化素质教育讲座');
 $timezone = new \DateTimeZone('Asia/Shanghai');
 $crawler = new Crawler("http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more", false);
 
@@ -44,7 +48,18 @@ foreach ($links as $link) {
                 break;
             }
         }
-        if(!$seen) $lectures[] = $info;
+        if(!$seen) {
+            $lectures[] = $info;
+            if($_CONFIG['enableWechat']) {
+                if($info['datetime'] != '') {
+                    $lectureTime = new \DateTime($info['datetime'], new \DateTimeZone('Asia/Shanghai'));
+                    $nowTime = new \DateTime('now', new \DateTimeZone('Asia/Shanghai'));
+                    if($lectureTime >= $nowTime) sendLectureByWeixin($info); // Prevent send lecture info in the past
+                } else {
+                    sendLectureByWeixin($info);
+                }
+            }
+        }
     }
 }
 
@@ -52,24 +67,32 @@ $fp = fopen(__DIR__ . '/../data/lectures.json', 'w');
 fwrite($fp, json_encode($lectures));
 fclose($fp);
 
-foreach ($lectures as $lecture) {
-    $vEvent = new \Eluceo\iCal\Component\Event();
+if($_CONFIG['enableIcal']) {
+    $vCalendar = new \Eluceo\iCal\Component\Calendar('清华大学文化素质教育讲座');
+    foreach ($lectures as $lecture) {
+        $vEvent = new \Eluceo\iCal\Component\Event();
 
-    $datetime = new \DateTime($lecture['datetime'], $timezone);
+        $vEvent
+            ->setUseTimezone(true)
+            ->setSummary($lecture['title'])
+            ->setLocation($lecture['location'])
+            ->setDescription($lecture['speaker'])
+            ->setUrl($lecture['link']);
 
-    $vEvent
-        ->setUseTimezone(true)
-        ->setSummary($lecture['title'])
-        ->setDtStart($datetime)
-        ->setDuration(getDuration($datetime))
-        ->setNoTime(false)
-        ->setLocation($lecture['location'])
-        ->setDescription($lecture['speaker'])
-        ->setUrl($lecture['link']);
+        if($lecture['datetime'] != '') {
+            $datetime = new \DateTime($lecture['datetime'], $timezone);
+            $vEvent
+                ->setDtStart($datetime)
+                ->setDuration(getDuration($datetime))
+                ->setNoTime(false);
+        } else {
+            $vEvent->setNoTime(true);
+        }
 
-    $vCalendar->addComponent($vEvent);
+        $vCalendar->addComponent($vEvent);
+    }
+
+    $cal = fopen(__DIR__ . '/../data/cal.ics', 'w');
+    fwrite($cal, $vCalendar->render());
+    fclose($cal);
 }
-
-$cal = fopen(__DIR__ . '/../data/cal.ics', 'w');
-fwrite($cal, $vCalendar->render());
-fclose($cal);

@@ -10,7 +10,7 @@
  * @param string $str
  * @return int|null
  */
-function getWeekday(string $str){
+function getWeekday($str){
     switch ($str){
         case '周一': return 1;
         case '周二': return 2;
@@ -83,14 +83,21 @@ function getLectureInfo($link){
         }
     }
 
-    preg_match('/(演讲人|讲述人|嘉\s{0,6}宾)[:：]\s{0,2}(.+)\s?\n+/u', $body, $matches);
+    preg_match('/(演\s{0,2}讲\s{0,2}人|讲\s{0,2}述\s{0,2}人|嘉\s{0,6}宾)[:：]\s{0,2}(.+)\s?\n+/u', $body, $matches);
     @$info['speaker'] = trimStr($matches[2]);
 
     preg_match('/(时\s*间|日\s*期)[:：](.+)\n+/u', $body, $matches);
     @$info['datetime_str'] = trimStr($matches[2]);
 
-    preg_match('/(\d{4})年(\d{1,2})月(\d{1,2})日\s{0,4}[(（]?周?\S?[）)]?(\d{1,2})[:：](\d{1,2})/u', $body, $matches);
-    @$info['datetime'] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . ' ' . $matches[4] . ':' . $matches[5] . ':00';
+    if(preg_match('/(\d{4})年(\d{1,2})月(\d{1,2})日\s{0,4}[(（]?周?\S?[）)]?\s{0,4}(上午|下午)?(\d{1,2})[:：](\d{1,2})/u', $body, $matches)) {
+        if ($matches[4] == '下午') {
+            @$info['datetime'] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . ' ' . (intval($matches[5]) + 12) . ':' . $matches[6] . ':00';
+        } else {
+            @$info['datetime'] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . ' ' . $matches[5] . ':' . $matches[6] . ':00';
+        }
+    } else {
+        $info['datetime'] = '';
+    }
 
     preg_match('/(地\s*点)[:：](.+)\n+/u', $body, $matches);
     @$info['location'] = trimStr($matches[2]);

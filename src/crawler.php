@@ -21,7 +21,7 @@ class Crawler
     /**
      * @param string $url
      */
-    public function setUrl(string $url) {
+    public function setUrl($url) {
         $this->url = $url;
         $this->host = $this->getHostFromUrl($url);
     }
@@ -29,7 +29,7 @@ class Crawler
     /**
      * @param bool $sameHost
      */
-    public function setSameHost(bool $sameHost) {
+    public function setSameHost($sameHost) {
         $this->sameHost = $sameHost;
     }
 
@@ -37,7 +37,7 @@ class Crawler
      * @param string $method
      * @throws Exception
      */
-    public function setMethod(string $method) {
+    public function setMethod($method) {
         if(!in_array(strtoupper($method), array('POST','GET'))) {
             throw new Exception('Unknown method');
         }
@@ -47,11 +47,11 @@ class Crawler
     /**
      * @param string $payload
      */
-    public function setPayload(string $payload) {
+    public function setPayload($payload) {
         $this->payload = $payload;
     }
 
-    public function __construct($url = '', bool $sameHost = false) {
+    public function __construct($url, $sameHost) {
         $this->setUrl($url);
         $this->setSameHost($sameHost);
     }

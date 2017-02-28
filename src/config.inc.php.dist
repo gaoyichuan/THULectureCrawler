@@ -1,0 +1,19 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: gaoyichuan
+ * Date: 3/5/17
+ * Time: 2:05 PM
+ */
+
+$_CONFIG = array(
+    /* App and app key for wechat api */
+    'app' => '',
+    'appkey' => '',
+
+    /* Enable sending wechat message */
+    'enableWechat' => true,
+
+    /* Enable generating iCal file */
+    'enableIcal' => true,
+);
