@@ -65,14 +65,22 @@ function getLectureInfo($link){
         $mock->appendChild($mock->importNode($child, true));
     }
     $body = html_entity_decode(strip_tags($mock->saveHTML()), ENT_COMPAT | ENT_HTML401, 'UTF-8');
+    $bodyRaw = html_entity_decode($mock->saveHTML(), ENT_COMPAT | ENT_HTML401, 'UTF-8');
 
     if(preg_match('/(演讲|讲座|演出)(标题|题目|主题|名称)[:：]\s{0,2}(\S{1,})\n{1,}/u', $body, $matches)) {
         @$info['title'] = trimStr($matches[3]);
-    } else if(preg_match('/\s*(.*)\n\s*\n(演讲人|讲述人|嘉\s*宾|主持人)[:：]/u', $body, $matches)) {
-        @$info['title'] = trimStr($matches[1]);
-    } else {
-        preg_match('/\n\s+(\S+)\n+(简介|讲座简介|讲座介绍)/u', $body, $matches);
-        @$info['title'] = trimStr($matches[1]);
+    } else if(preg_match_all('/<strong>(.*[^:][^：])<\/strong>/u', $bodyRaw, $matches)) {
+        $str = trimStr(strip_tags($matches[1][0]));
+        if((strpos($str, '课程预告') !== false) or (preg_match('/[:：]$/u', $body) > 0)) {
+            if(preg_match('/\s*(.*)\n\s*\n(演讲人|讲述人|嘉\s*宾|主持人)[:：]/u', $body, $matches)) {
+                @$info['title'] = trimStr($matches[1]);
+            } else {
+                preg_match('/\n\s+(\S+)\n+(简介|讲座简介|讲座介绍)/u', $body, $matches);
+                @$info['title'] = trimStr($matches[1]);
+            }
+        } else {
+            @$info['title'] = $str;
+        }
     }
 
     preg_match('/(演讲人|讲述人|嘉\s{0,6}宾)[:：]\s{0,2}(.+)\s?\n+/u', $body, $matches);
