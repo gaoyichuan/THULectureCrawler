@@ -32,7 +32,7 @@ $lectures = file_exists(__DIR__ . '/../data/lectures.json') ? json_decode(file_g
 
 $links = array();
 
-for ($page = 0; $page < 10; $page++) {  // Crawl two pages is enough
+for ($page = 0; $page < 2; $page++) {  // Crawl two pages is enough
     $url = "http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more?page=$page";
     $crawler->setUrl($url);
     $links = array_merge($links, $crawler->crawl());
