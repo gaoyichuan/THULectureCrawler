@@ -6,9 +6,7 @@
  * Date: 2/7/17
  * Time: 1:39 PM
  */
-
-class Crawler
-{
+class Crawler {
     /** @var string */
     private $url;
     private $host;
@@ -18,12 +16,25 @@ class Crawler
     /** @var bool */
     private $sameHost = false;
 
+    public function __construct($url, $sameHost) {
+        $this->setUrl($url);
+        $this->setSameHost($sameHost);
+    }
+
     /**
      * @param string $url
      */
     public function setUrl($url) {
         $this->url = $url;
         $this->host = $this->getHostFromUrl($url);
+    }
+
+    /**
+     * @param string $url
+     * @return mixed host
+     */
+    private function getHostFromUrl($url) {
+        return parse_url($url, PHP_URL_HOST);
     }
 
     /**
@@ -38,7 +49,7 @@ class Crawler
      * @throws Exception
      */
     public function setMethod($method) {
-        if(!in_array(strtoupper($method), array('POST','GET'))) {
+        if (!in_array(strtoupper($method), array('POST', 'GET'))) {
             throw new Exception('Unknown method');
         }
         $this->method = $method;
@@ -49,11 +60,6 @@ class Crawler
      */
     public function setPayload($payload) {
         $this->payload = $payload;
-    }
-
-    public function __construct($url, $sameHost) {
-        $this->setUrl($url);
-        $this->setSameHost($sameHost);
     }
 
     public function crawl() {
@@ -98,7 +104,7 @@ class Crawler
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        if(strtoupper($method) == 'POST'){
+        if (strtoupper($method) == 'POST') {
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         }
@@ -106,8 +112,8 @@ class Crawler
         $output = curl_exec($ch);
         curl_close($ch);
 
-        if($output !== false){
-            if(!class_exists('DOMDocument')){
+        if ($output !== false) {
+            if (!class_exists('DOMDocument')) {
                 throw new Exception('Unable to find the DOM extension');
             }
 
@@ -115,13 +121,12 @@ class Crawler
             $dom = new DOMDocument;
             @$dom->loadHTML($output);
 
-            foreach ($dom->getElementsByTagName('a') as $node)
-            {
-                if($node->getAttribute('href') != ''){
+            foreach ($dom->getElementsByTagName('a') as $node) {
+                if ($node->getAttribute('href') != '') {
                     $href = $node->getAttribute('href');
 
                     $prefix = '';
-                    if(strpos($href, '/') == 0) {
+                    if (strpos($href, '/') == 0) {
                         $prefix = $this->getSchemeFromUrl($url) . '://' . $this->getHostFromUrl($url);
                     } elseif (strpos($href, 'http') != 0) {
                         $prefix = $url;
@@ -145,15 +150,7 @@ class Crawler
      * @param string $url
      * @return mixed host
      */
-    private function getHostFromUrl($url){
-        return parse_url($url, PHP_URL_HOST);
-    }
-
-    /**
-     * @param string $url
-     * @return mixed host
-     */
-    private function getSchemeFromUrl($url){
+    private function getSchemeFromUrl($url) {
         return parse_url($url, PHP_URL_SCHEME);
     }
 }

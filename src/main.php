@@ -16,9 +16,9 @@ global $_CONFIG;
 date_default_timezone_set('Asia/Shanghai');
 
 function getDuration(\DateTime $datetime) {
-    if($datetime->format('N') > 5) {
+    if ($datetime->format('N') > 5) {
         return new \DateInterval('PT2H');
-    } else if(in_array($datetime->format('H:i'), array('13:30', '15:20', '17:05'))) {
+    } else if (in_array($datetime->format('H:i'), array('13:30', '15:20', '17:05'))) {
         return new \DateInterval('PT1H35M');
     } else {
         return new \DateInterval('PT2H');
@@ -32,29 +32,29 @@ $lectures = file_exists(__DIR__ . '/../data/lectures.json') ? json_decode(file_g
 
 $links = array();
 
-for ($page = 0; $page < 2; $page++) {  // Crawl two pages is enough
+for ($page = 0; $page < 10; $page++) {  // Crawl two pages is enough
     $url = "http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more?page=$page";
     $crawler->setUrl($url);
     $links = array_merge($links, $crawler->crawl());
 }
 
 foreach ($links as $link) {
-    if((preg_match('/[0-9]{1,2}周/u', $link['title']) != false) && (mb_strpos($link['title'], '预告') != false)) {
+    if ((preg_match('/[0-9]{1,2}周/u', $link['title']) != false) && (mb_strpos($link['title'], '预告') != false)) {
         $info = getLectureInfo($link);
         $seen = false;
         foreach ($lectures as $lecture) {
-            if($lecture['link'] == $link['url']) {
+            if ($lecture['link'] == $link['url']) {
                 $seen = true;
                 break;
             }
         }
-        if(!$seen) {
+        if (!$seen) {
             $lectures[] = $info;
-            if($_CONFIG['enableWechat']) {
-                if($info['datetime'] != '') {
+            if ($_CONFIG['enableWechat']) {
+                if ($info['datetime'] != '') {
                     $lectureTime = new \DateTime($info['datetime'], new \DateTimeZone('Asia/Shanghai'));
                     $nowTime = new \DateTime('now', new \DateTimeZone('Asia/Shanghai'));
-                    if($lectureTime >= $nowTime) sendLectureByWeixin($info); // Prevent send lecture info in the past
+                    if ($lectureTime >= $nowTime) sendLectureByWeixin($info); // Prevent send lecture info in the past
                 } else {
                     sendLectureByWeixin($info);
                 }
@@ -67,21 +67,28 @@ $fp = fopen(__DIR__ . '/../data/lectures.json', 'w');
 fwrite($fp, json_encode($lectures));
 fclose($fp);
 
-if($_CONFIG['enableIcal']) {
+if ($_CONFIG['enableIcal']) {
     $vCalendar = new \Eluceo\iCal\Component\Calendar('清华大学文化素质教育讲座');
     foreach ($lectures as $lecture) {
         $vEvent = new \Eluceo\iCal\Component\Event();
 
         $vEvent
-            ->setUseTimezone(true)
             ->setSummary($lecture['title'])
             ->setLocation($lecture['location'])
             ->setDescription($lecture['speaker'])
             ->setUrl($lecture['link']);
 
-        if($lecture['datetime'] != '') {
+        $haveTime = true;
+        try {
             $datetime = new \DateTime($lecture['datetime'], $timezone);
+        } catch (Exception $e) {
+            $lecture['datetime'] = '';
+            $haveTime = false;
+        }
+
+        if ($haveTime && ($datetime instanceof \DateTime)) {
             $vEvent
+                ->setUseTimezone(true)
                 ->setDtStart($datetime)
                 ->setDuration(getDuration($datetime))
                 ->setNoTime(false);
