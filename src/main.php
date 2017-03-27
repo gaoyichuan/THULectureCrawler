@@ -26,7 +26,7 @@ function getDuration(\DateTime $datetime) {
 }
 
 $timezone = new \DateTimeZone('Asia/Shanghai');
-$crawler = new Crawler("http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more", false);
+$crawler = new Crawler("http://postinfo.tsinghua.edu.cn/f/jiaowugonggao/more", true);
 
 $lectures = file_exists(__DIR__ . '/../data/lectures.json') ? json_decode(file_get_contents(__DIR__ . '/../data/lectures.json'), true) : array();
 
