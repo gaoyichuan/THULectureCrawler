@@ -70,34 +70,37 @@ fclose($fp);
 if ($_CONFIG['enableIcal']) {
     $vCalendar = new \Eluceo\iCal\Component\Calendar('清华大学文化素质教育讲座');
     foreach ($lectures as $lecture) {
-        $vEvent = new \Eluceo\iCal\Component\Event();
+        if ($lecture['title'] != '') {
+            $vEvent = new \Eluceo\iCal\Component\Event();
 
-        $vEvent
-            ->setSummary($lecture['title'])
-            ->setLocation($lecture['location'])
-            ->setDescription($lecture['speaker'])
-            ->setUrl($lecture['link']);
-
-        $haveTime = true;
-        try {
-            $datetime = new \DateTime($lecture['datetime'], $timezone);
-        } catch (Exception $e) {
-            $lecture['datetime'] = '';
-            $haveTime = false;
-        }
-
-        if ($haveTime && ($datetime instanceof \DateTime)) {
             $vEvent
-                ->setUseTimezone(true)
-                ->setDtStart($datetime)
-                ->setDuration(getDuration($datetime))
-                ->setNoTime(false);
-        } else {
-            $vEvent->setNoTime(true);
-        }
+                ->setSummary($lecture['title'])
+                ->setLocation($lecture['location'])
+                ->setDescription($lecture['speaker'])
+                ->setUrl($lecture['link']);
 
-        $vCalendar->addComponent($vEvent);
+            $haveTime = true;
+            try {
+                $datetime = new \DateTime($lecture['datetime'], $timezone);
+            } catch (Exception $e) {
+                $lecture['datetime'] = '';
+                $haveTime = false;
+            }
+
+            if ($haveTime && ($datetime instanceof \DateTime)) {
+                $vEvent
+                    ->setUseTimezone(true)
+                    ->setDtStart($datetime)
+                    ->setDuration(getDuration($datetime))
+                    ->setNoTime(false);
+            } else {
+                $vEvent->setNoTime(true);
+            }
+
+            $vCalendar->addComponent($vEvent);
+        }
     }
+
 
     $cal = fopen(__DIR__ . '/../data/cal.ics', 'w');
     fwrite($cal, $vCalendar->render());
