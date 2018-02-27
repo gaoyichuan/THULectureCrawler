@@ -131,7 +131,7 @@ function getLectureInfo($link) {
     preg_match('/(时\s*间|日\s*期)[:：](.+)\n+/u', $body, $matches);
     @$info['datetime_str'] = trimStr($matches[2]);
 
-    if (preg_match('/(\d{4})年(\d{1,2})月(\d{1,2})日\s{0,4}[(（]?周?\S?[）)]?\s{0,4}(上午|下午)?(\d{1,2})[:：](\d{1,2})/u', $body, $matches)) {
+    if (preg_match('/(\d{4})年(\d{1,2})月(\d{1,2})日\s{0,4}[(（]?\s*周?\s*\S?\s*[）)]?\s{0,4}(上午|下午)?(\d{1,2})[:：](\d{1,2})/u', $body, $matches)) {
         if ($matches[4] == '下午') {
             if(intval($matches[5] <= 12)){
                 @$info['datetime'] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . ' ' . (intval($matches[5]) + 12) . ':' . $matches[6] . ':00';
