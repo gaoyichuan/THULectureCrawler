@@ -97,7 +97,7 @@ if ($_CONFIG['enableIcal']) {
                 $vEvent->setNoTime(true);
             }
 
-            $vCalendar->addComponent($vEvent);
+            if($haveTime) $vCalendar->addComponent($vEvent);
         }
     }
 
